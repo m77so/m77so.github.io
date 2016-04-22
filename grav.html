@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <title>Test Map</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+  <meta charset="utf-8">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #map {
+      height: 80%;
+      width: 80%;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <ul id="container">
+
+  </ul>
+  参考：http://qiita.com/SOJO/items/d43a28a6fe27de3cc85c
+  <script>
+    function initMap() {
+      var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 8,
+        center: {lat: 36, lng: 138}
+      });
+	  var marks = [];
+	  var poses = [];
+	  var Gmarker = new google.maps.Marker({
+			position: new google.maps.LatLng(36,138),
+			map: map,
+			label: "重",
+			title: "Grav"
+		});
+      map.addListener('click', function(e) {
+        getClickLatLng(e.latLng, map, marks,poses,Gmarker);
+      });
+    }
+
+    function getClickLatLng(lat_lng, map, marks, poses, Gm) {
+
+      var marker = new google.maps.Marker({
+        position: lat_lng,
+        map: map,
+		label: String.fromCharCode(marks.length + 65)
+      });
+	  console.log(lat_lng);
+	  var l = document.createElement("li");
+		l.appendChild(document.createTextNode(String.fromCharCode(marks.length + 65) + " lat:" + lat_lng.lat() + ",lng:" + lat_lng.lng()  ));
+		
+		l.setAttribute("id","l-" + marks.length);
+		var rm = document.createElement("button");
+		rm.setAttribute("marker_id",marks.length);
+		rm.appendChild(document.createTextNode("remove"));
+		rm.addEventListener("click",function(e){rmMarker(rm.getAttribute("marker_id"),marks,poses,Gm,map);});
+		l.appendChild(rm);
+		document.getElementById("container").appendChild(l);
+			  marks.push(marker);
+			  poses.push([lat_lng.lat(),lat_lng.lng()]);
+
+      map.panTo(lat_lng);
+	  calcG(poses,Gm,map);
+    }
+	function rmMarker(id,marks,poses,Gm,map){
+		marks[id].setMap(null);
+		var l = document.getElementById("l-" + id);
+		l.parentNode.removeChild(l);
+		poses.splice(id,1);
+		calcG(poses,Gm,map);
+	}
+	function calcG(poses,Gm,map){
+	var lt=0;ln=0;
+		for(i=0;i<poses.length;++i){
+			lt+=poses[i][0];
+			ln+=poses[i][1];
+		}
+		lt/=poses.length;
+		ln/=poses.length;
+		Gm.setPosition(new google.maps.LatLng(lt,ln));
+		
+		
+	}
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?signed_in=true&callback=initMap" async defer></script>
+</body>
+</html>
